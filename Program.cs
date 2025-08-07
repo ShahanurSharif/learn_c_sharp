@@ -1,21 +1,36 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.IO;
 using DocumentFormat.OpenXml.Packaging;
-using DocumentFormat.OpenXml.Wordprocessing;
+using OpenXmlPowerTools;
+using System.Collections.Generic;
+using System.Xml.Linq;
 
 class Program
 {
 
     public static void Main(string[] args)
     {
-        Console.Write("Enter the first file name: ");
-        object fileName1 = Console.ReadLine();
-        
-        Console.Write("Enter the second file name: ");
-        object fileName2 = Console.ReadLine();
+        string file1 = "1.docx";
+        string file2 = "2.docx";
+        string output = "merged.docx";
 
-        using var doc1 = WordprocessingDocument.Open(fileName1, false);
-        var body1 = doc1.MainDocumentPart.Document.Body;
+        // Open source files as OpenXmlPackage
+        using (var doc1 = WordprocessingDocument.Open(file1, false))
+        using (var doc2 = WordprocessingDocument.Open(file2, false))
+        {
+            // Get the content as XDocument (LINQ to XML)
+            var sources = new List<Source>
+            {
+                new Source(new WmlDocument(file1), true),
+                new Source(new WmlDocument(file2), true)
+            };
+
+            // Merge using PowerTools
+            WmlDocument mergedDoc = DocumentBuilder.BuildDocument(sources);
+
+            // Save the result
+            mergedDoc.SaveAs(output);
+        }
+        System.Console.WriteLine("Merge complete! Saved as: " + output);
         
     }
     
